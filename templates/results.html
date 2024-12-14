@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Recipe Results</title>
+    <style>
+        /* Global styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: #333;
+        }
+        h2, h3 {
+            color: #555;
+            text-align: center;
+        }
+        h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        h3 {
+            font-size: 1.5em;
+            color: #007bff;
+        }
+
+        /* Container */
+        .container {
+            width: 80%;
+            max-width: 900px;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        /* Ingredients list */
+        #ingredients-list {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        #ingredients-list li {
+            background-color: #d1e7ff;
+            color: #004085;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 1em;
+        }
+
+        /* Recipe list */
+        #recipe-list {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        #recipe-list li {
+            cursor: pointer;
+            padding: 12px;
+            background-color: #eaf4fc;
+            border: 1px solid #c8e2f8;
+            border-radius: 5px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        #recipe-list li:hover {
+            background-color: #c8e2f8;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Recipe instructions */
+        #steps {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            border-top: 1px solid #ccc;
+            background-color: #fefefe;
+            border-radius: 5px;
+        }
+        #recipe-title {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        #recipe-ingredients, #recipe-steps {
+            padding-left: 20px;
+            font-size: 1.1em;
+            color: #333;
+        }
+        #recipe-ingredients {
+            margin-top: 15px;
+        }
+        #recipe-steps {
+            list-style-type: decimal;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Identified Ingredients</h2>
+        <ul id="ingredients-list">
+            <!-- Ingredients will be dynamically loaded here -->
+        </ul>
+
+        <h2>Top 5 Recommended Recipes</h2>
+        <ul id="recipe-list">
+            <!-- Recipe titles will be dynamically loaded here -->
+        </ul>
+
+        <div id="steps">
+            <h3 id="recipe-title"></h3>
+            <h4>Ingredients Needed</h4>
+            <ul id="recipe-ingredients"></ul>
+            <h4>Instructions</h4>
+            <ol id="recipe-steps"></ol>
+        </div>
+    </div>
+
+    <script>
+        // Data passed from Flask
+        let ingredients = {{ ingredients | tojson }};
+        let recipes = {{ recipes | tojson }};
+
+        // Load ingredients list
+        const ingredientsList = document.getElementById('ingredients-list');
+        ingredients.forEach(ingredient => {
+            const listItem = document.createElement('li');
+            listItem.textContent = ingredient;
+            ingredientsList.appendChild(listItem);
+        });
+
+        // Load recipe list with clickable links
+        const recipeList = document.getElementById('recipe-list');
+        recipes.forEach((recipe, index) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = recipe.Title;
+            listItem.addEventListener('click', () => loadRecipeDetails(index));
+            recipeList.appendChild(listItem);
+        });
+
+        // Display ingredients and instructions for selected recipe
+        function loadRecipeDetails(index) {
+            const recipe = recipes[index];
+            document.getElementById('recipe-title').textContent = recipe.Title;
+
+            // Load ingredients for the selected recipe
+            const ingredientsContainer = document.getElementById('recipe-ingredients');
+            ingredientsContainer.innerHTML = "";  // Clear previous ingredients
+            const ingredientsList = recipe.Ingredients.split(', ').filter(ing => ing);
+            ingredientsList.forEach(ingredient => {
+                const ingredientItem = document.createElement('li');
+                ingredientItem.textContent = ingredient;
+                ingredientsContainer.appendChild(ingredientItem);
+            });
+
+            // Load instructions for the selected recipe
+            const stepsContainer = document.getElementById('recipe-steps');
+            stepsContainer.innerHTML = "";  // Clear previous steps
+            const steps = recipe.Instructions.split('. ').filter(step => step);
+            steps.forEach(step => {
+                const stepItem = document.createElement('li');
+                stepItem.textContent = step;
+                stepsContainer.appendChild(stepItem);
+            });
+
+            // Show the steps container
+            document.getElementById('steps').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
